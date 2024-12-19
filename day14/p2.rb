@@ -30,39 +30,45 @@ f.each_line do |line|
   robots << [p, v]
 end
 
-robots.each do |r|
-  p, v = r
+def patrol(matrix, robots, times)
+  robots.each do |r|
+    p, v = r
 
-  i, j = p
-  di, dj = v
-  i = (i + 100 * di) % matrix.size
-  j = (j + 100 * dj) % matrix[0].size
-  r[0] = [i, j]
+    i, j = p
+    di, dj = v
+    i = (i + times * di) % matrix.size
+    j = (j + times * dj) % matrix[0].size
 
-  matrix[i][j] = 0 if matrix[i][j] == '.'
-  matrix[i][j] += 1
-end
-
-mid_i = matrix.size / 2
-mid_j = matrix[0].size / 2
-
-robot_counts = Array.new(4, 0)
-matrix.each_with_index do |row, i|
-  row.each_with_index do |col, j|
-    next if col == '.'
-
-    if i < mid_i && j < mid_j
-      robot_counts[0] += col
-    elsif i < mid_i && j > mid_j
-      robot_counts[1] += col
-    elsif i > mid_i && j < mid_j
-      robot_counts[2] += col
-    elsif i > mid_i && j > mid_j
-      robot_counts[3] += col
-    end
+    matrix[i][j] = '#' if matrix[i][j] == '.'
   end
+
+  match = false
+  matrix.each_with_index do |row, i|
+    cnt = 0
+    row.each_with_index do |col, j|
+      if col == '.'
+        cnt = 0
+      else
+        cnt += 1
+      end
+
+      if cnt > 15
+        match = true
+        break
+      end
+    end
+
+    break if match
+  end
+
+  return unless match
+
+  puts "after #{times} seconds"
+  puts matrix.map { |r| r.join }.join("\n")
 end
 
-robots.each { |r| puts "p:#{r[0]}, v:#{r[1]}" }
-puts matrix.map { |r| r.join }.join("\n")
-puts robot_counts.reduce(&:*)
+(0..10_000).each do |i|
+  test_matrix = matrix.map(&:dup)
+
+  patrol(test_matrix, robots, i)
+end
